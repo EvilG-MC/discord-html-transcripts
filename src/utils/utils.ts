@@ -66,3 +66,11 @@ export function streamToString(stream: NodeJS.ReadableStream) {
     stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
   });
 }
+
+/**
+ * 
+ * Convert a number color to HEX
+ * @param color - The color number
+ * @returns 
+ */
+export const convertToHEX = (color?: number) => color ? `#${color.toString(16).padStart(6, '0')}` : "#FFFFFF"; 

@@ -1,10 +1,12 @@
 import { DiscordReaction, DiscordReactions, DiscordSystemMessage } from '@derockdev/discord-components-react';
 import React from 'react';
-import { parseDiscordEmoji } from '../../utils/utils';
+import { convertToHEX, parseDiscordEmoji } from '../../utils/utils';
 import { MessageType } from 'seyfert/lib/types';
 import type { GuildMember, Message, User } from 'seyfert';
 
 export default async function SystemMessage({ message }: { message: Message }) {
+  const highestRole = await message.member?.roles.highest();
+  
   switch (message.type) {
     case MessageType.RecipientAdd:
     case MessageType.UserJoin:
@@ -17,7 +19,7 @@ export default async function SystemMessage({ message }: { message: Message }) {
     case MessageType.ChannelPinnedMessage:
       return (
         <DiscordSystemMessage id={`m-${message.id}`} key={message.id} type="pin">
-          <Highlight color={"#FFFFFF"}>
+          <Highlight color={convertToHEX((highestRole?.color))}>
             {message.author.tag}
           </Highlight>{' '}
           pinned <i data-goto={message.messageReference?.messageId}>a message</i> to this channel.
@@ -43,7 +45,7 @@ export default async function SystemMessage({ message }: { message: Message }) {
     case MessageType.GuildBoostTier3:
       return (
         <DiscordSystemMessage id={`m-${message.id}`} key={message.id} type="boost">
-          <Highlight color={"#FFFFFF"}>
+          <Highlight color={convertToHEX(highestRole?.color)}>
             {message.author.tag}
           </Highlight>{' '}
           boosted the server!
@@ -53,7 +55,7 @@ export default async function SystemMessage({ message }: { message: Message }) {
     case MessageType.ThreadStarterMessage:
       return (
         <DiscordSystemMessage id={`ms-${message.id}`} key={message.id} type="thread">
-          <Highlight color={"#FFFFFF"}>
+          <Highlight color={convertToHEX(highestRole?.color)}>
             {message.author.tag}
           </Highlight>{' '}
           started a thread: <i data-goto={message.messageReference?.messageId}>{message.content}</i>
@@ -109,14 +111,15 @@ const allJoinMessages = [
   "Hello. Is it {user} you're looking for?",
 ];
 
-export function JoinMessage({ member, fallbackUser }: { member: GuildMember | null; fallbackUser: User }) {
+export async function JoinMessage({ member, fallbackUser }: { member: GuildMember | null; fallbackUser: User }) {
   const randomMessage = allJoinMessages[Math.floor(Math.random() * allJoinMessages.length)];
+  const highestRole = await member?.roles.highest();
 
   return randomMessage
     .split('{user}')
     .flatMap((item, i) => [
       item,
-      <Highlight color={"#FFFFFF"} key={i}>
+      <Highlight color={convertToHEX(highestRole?.color)} key={i}>
         {member?.user.tag ?? fallbackUser.tag}
       </Highlight>,
     ])

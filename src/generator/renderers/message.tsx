@@ -7,7 +7,7 @@ import {
   DiscordThread,
   DiscordThreadMessage,
 } from '@derockdev/discord-components-react';
-import type { Message as MessageType } from 'seyfert';
+import type { BaseGuildChannel, Message as MessageType } from 'seyfert';
 import React from 'react';
 import type { RenderMessageContext } from '..';
 import { parseDiscordEmoji } from '../../utils/utils';
@@ -29,7 +29,8 @@ export default async function DiscordMessage({
   //@ts-expect-error not implemented yet
   if (message.system) return <DiscordSystemMessage message={message} />;
 
-  const isCrosspost = message.messageReference && message.messageReference.guildId !== (await message.guild())?.id;
+  const guildId = message.guildId ?? (await message.channel() as BaseGuildChannel | undefined)?.guildId;
+  const isCrosspost = message.messageReference && message.messageReference.guildId !== guildId;
   const threadMessage = message.thread && (message.thread.type === ChannelType.PublicThread || message.thread.type === ChannelType.PrivateThread)
     ? await message.client.messages.fetch(message.thread.lastMessageId!, message.thread.id).catch(() => null)
     : null;

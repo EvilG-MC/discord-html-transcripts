@@ -16,7 +16,7 @@ import type { ASTNode } from 'simple-markdown';
 import { ASTNode as MessageASTNodes } from 'simple-markdown';
 import type { SingleASTNode } from 'simple-markdown';
 import type { RenderMessageContext } from '../';
-import { parseDiscordEmoji } from '../../utils/utils';
+import { convertToHEX, parseDiscordEmoji } from '../../utils/utils';
 import type { APIMessageComponentEmoji } from 'seyfert/lib/types';
 import { ChannelType } from 'seyfert/lib/types';
 import type { BaseGuildChannel } from 'seyfert';
@@ -145,7 +145,7 @@ export async function MessageSingleASTNode({ node, context }: { node: SingleASTN
       const role = await context.callbacks.resolveRole(id);
 
       return (
-        <DiscordMention type="role" color={context.type === RenderType.REPLY ? undefined : `#${role?.color.toString(16).padStart(6, '0')}`}>
+        <DiscordMention type="role" color={context.type === RenderType.REPLY ? undefined : convertToHEX(role?.color)}>
           {role ? role.name : `<@&${id}>`}
         </DiscordMention>
       );
