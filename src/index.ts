@@ -100,7 +100,7 @@ export async function createTranscript<T extends ExportReturnType = ExportReturn
     if (!lastMessageId) delete fetchLimitOptions.before;
 
     // fetch messages
-    const messages = await channel.client.channels.fetchMessages(channel.id);
+    const messages = await channel.client.channels.fetchMessages(channel.id, fetchLimitOptions);
 
     // add the messages to the array
     allMessages.push(...messages.values());
