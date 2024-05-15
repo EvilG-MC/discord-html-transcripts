@@ -1,7 +1,8 @@
 import { DiscordReaction, DiscordReactions, DiscordSystemMessage } from '@derockdev/discord-components-react';
-import { MessageType, type GuildMember, type Message, type User } from 'discord.js';
 import React from 'react';
 import { parseDiscordEmoji } from '../../utils/utils';
+import { MessageType } from 'seyfert/lib/types';
+import type { GuildMember, Message, User } from 'seyfert';
 
 export default async function SystemMessage({ message }: { message: Message }) {
   switch (message.type) {
@@ -9,21 +10,21 @@ export default async function SystemMessage({ message }: { message: Message }) {
     case MessageType.UserJoin:
       return (
         <DiscordSystemMessage id={`m-${message.id}`} key={message.id} type="join">
-          <JoinMessage member={message.member} fallbackUser={message.author} />
+          <JoinMessage member={message.member ?? null} fallbackUser={message.author} />
         </DiscordSystemMessage>
       );
 
     case MessageType.ChannelPinnedMessage:
       return (
         <DiscordSystemMessage id={`m-${message.id}`} key={message.id} type="pin">
-          <Highlight color={message.member?.roles.color?.hexColor}>
-            {message.author.displayName ?? message.author.username}
+          <Highlight color={"#FFFFFF"}>
+            {message.author.tag}
           </Highlight>{' '}
-          pinned <i data-goto={message.reference?.messageId}>a message</i> to this channel.
+          pinned <i data-goto={message.messageReference?.messageId}>a message</i> to this channel.
           {/* reactions */}
-          {message.reactions.cache.size > 0 && (
+          {message.reactions && message.reactions.length > 0 && (
             <DiscordReactions slot="reactions">
-              {message.reactions.cache.map((reaction, id) => (
+              {message.reactions.map((reaction, id) => (
                 <DiscordReaction
                   key={`${message.id}r${id}`}
                   name={reaction.emoji.name!}
@@ -42,8 +43,8 @@ export default async function SystemMessage({ message }: { message: Message }) {
     case MessageType.GuildBoostTier3:
       return (
         <DiscordSystemMessage id={`m-${message.id}`} key={message.id} type="boost">
-          <Highlight color={message.member?.roles.color?.hexColor}>
-            {message.author.displayName ?? message.author.username}
+          <Highlight color={"#FFFFFF"}>
+            {message.author.tag}
           </Highlight>{' '}
           boosted the server!
         </DiscordSystemMessage>
@@ -52,10 +53,10 @@ export default async function SystemMessage({ message }: { message: Message }) {
     case MessageType.ThreadStarterMessage:
       return (
         <DiscordSystemMessage id={`ms-${message.id}`} key={message.id} type="thread">
-          <Highlight color={message.member?.roles.color?.hexColor}>
-            {message.author.displayName ?? message.author.username}
+          <Highlight color={"#FFFFFF"}>
+            {message.author.tag}
           </Highlight>{' '}
-          started a thread: <i data-goto={message.reference?.messageId}>{message.content}</i>
+          started a thread: <i data-goto={message.messageReference?.messageId}>{message.content}</i>
         </DiscordSystemMessage>
       );
 
@@ -115,8 +116,8 @@ export function JoinMessage({ member, fallbackUser }: { member: GuildMember | nu
     .split('{user}')
     .flatMap((item, i) => [
       item,
-      <Highlight color={member?.roles.color?.hexColor} key={i}>
-        {member?.nickname ?? fallbackUser.displayName ?? fallbackUser.username}
+      <Highlight color={"#FFFFFF"} key={i}>
+        {member?.user.tag ?? fallbackUser.tag}
       </Highlight>,
     ])
     .slice(0, -1);

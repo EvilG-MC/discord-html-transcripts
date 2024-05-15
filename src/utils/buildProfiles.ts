@@ -1,9 +1,10 @@
-import { type GuildMember, type Message, type User, UserFlags } from 'discord.js';
+import type { GuildMember, Message, User } from "seyfert";
+import { ChannelType, UserFlags } from "seyfert/lib/types";
 
 export type Profile = {
   author: string; // author of the message
-  avatar?: string; // avatar of the author
-  roleColor?: string; // role color of the author
+  avatar: string | null; // avatar of the author
+  roleColor?: string | null; // role color of the author
   roleIcon?: string; // role color of the author
   roleName?: string; // role name of the author
 
@@ -20,22 +21,24 @@ export async function buildProfiles(messages: Message[]) {
     const author = message.author;
     if (!profiles[author.id]) {
       // add profile
-      profiles[author.id] = buildProfile(message.member, author);
+      profiles[author.id] = await buildProfile(message.member, author);
     }
 
     // add interaction users
     if (message.interaction) {
-      const user = message.interaction.user;
+      const user = message.author;
       if (!profiles[user.id]) {
-        profiles[user.id] = buildProfile(null, user);
+        profiles[user.id] = await buildProfile(undefined, user);
       }
     }
 
     // threads
-    if (message.thread && message.thread.lastMessage) {
-      profiles[message.thread.lastMessage.author.id] = buildProfile(
-        message.thread.lastMessage.member,
-        message.thread.lastMessage.author
+    if (message.thread && (message.thread.type === ChannelType.PublicThread || message.thread.type === ChannelType.PrivateThread)) {
+      const thread = await message.client.messages.fetch(message.thread.id, message.thread.parentId!);
+      
+      profiles[thread.author.id] = await buildProfile(
+        thread.member,
+        thread.author
       );
     }
   }
@@ -44,14 +47,14 @@ export async function buildProfiles(messages: Message[]) {
   return profiles;
 }
 
-function buildProfile(member: GuildMember | null, author: User) {
+async function buildProfile(member: GuildMember | undefined, author: User) {
   return {
-    author: member?.nickname ?? author.displayName ?? author.username,
-    avatar: member?.displayAvatarURL({ size: 64 }) ?? author.displayAvatarURL({ size: 64 }),
-    roleColor: member?.displayHexColor,
-    roleIcon: member?.roles.icon?.iconURL() ?? undefined,
-    roleName: member?.roles.hoist?.name ?? undefined,
+    author: author.tag,
+    avatar: member?.dynamicAvatarURL({ size: 64 }) ?? author.avatarURL({ size: 64 }),
+    roleColor: `${member?.user.accentColor?.toString(16).padStart(6, '0')}`,
+    roleIcon: undefined,
+    roleName: undefined,
     bot: author.bot,
-    verified: author.flags?.has(UserFlags.VerifiedBot),
+    verified: author.flags && (author.flags & UserFlags.VerifiedBot) === UserFlags.VerifiedBot,
   };
 }

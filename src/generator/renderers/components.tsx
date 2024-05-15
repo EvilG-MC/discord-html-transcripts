@@ -1,9 +1,10 @@
 import { DiscordActionRow, DiscordButton } from '@derockdev/discord-components-react';
-import { ButtonStyle, ComponentType, type MessageActionRowComponent, type ActionRow } from 'discord.js';
+import type { APIActionRowComponent, APIActionRowComponentTypes, APIButtonComponentWithURL} from 'seyfert/lib/types';
+import { ButtonStyle, ComponentType } from 'seyfert/lib/types';
 import React from 'react';
 import { parseDiscordEmoji } from '../../utils/utils';
 
-export default function ComponentRow({ row, id }: { row: ActionRow<MessageActionRowComponent>; id: number }) {
+export default function ComponentRow({ row, id }: { row: APIActionRowComponent<APIActionRowComponentTypes>; id: number }) {
   return (
     <DiscordActionRow key={id}>
       {row.components.map((component, id) => (
@@ -21,13 +22,13 @@ const ButtonStyleMapping = {
   [ButtonStyle.Link]: 'secondary',
 } as const;
 
-export function Component({ component, id }: { component: MessageActionRowComponent; id: number }) {
+export function Component({ component, id }: { component: APIActionRowComponentTypes; id: number }) {
   if (component.type === ComponentType.Button) {
     return (
       <DiscordButton
         key={id}
-        type={ButtonStyleMapping[component.style]}
-        url={component.url ?? undefined}
+        type={ButtonStyleMapping[component.style!]}
+        url={(component as APIButtonComponentWithURL).url ?? undefined}
         emoji={component.emoji ? parseDiscordEmoji(component.emoji) : undefined}
       >
         {component.label}

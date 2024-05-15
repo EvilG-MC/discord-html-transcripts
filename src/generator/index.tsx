@@ -1,4 +1,3 @@
-import { type Awaitable, type Channel, type Message, type Role, type User } from 'discord.js';
 import ReactDOMServer from 'react-dom/server';
 import React from 'react';
 import { buildProfiles } from '../utils/buildProfiles';
@@ -8,6 +7,8 @@ import path from 'path';
 import { renderToString } from '@derockdev/discord-components-core/hydrate';
 import { streamToString } from '../utils/utils';
 import DiscordMessages from './transcript';
+import type { AllChannels, BaseGuildChannel, GuildRole, Message, User } from 'seyfert';
+import type { Awaitable } from 'seyfert/lib/common';
 
 // read the package.json file and get the @derockdev/discord-components-core version
 let discordComponentsVersion = '^3.6.1';
@@ -21,12 +22,12 @@ try {
 
 export type RenderMessageContext = {
   messages: Message[];
-  channel: Channel;
+  channel: AllChannels;
 
   callbacks: {
-    resolveChannel: (channelId: string) => Awaitable<Channel | null>;
+    resolveChannel: (channelId: string) => Awaitable<AllChannels | null>;
     resolveUser: (userId: string) => Awaitable<User | null>;
-    resolveRole: (roleId: string) => Awaitable<Role | null>;
+    resolveRole: (roleId: string) => Awaitable<GuildRole | null>;
   };
 
   poweredBy?: boolean;
@@ -53,15 +54,15 @@ export default async function render({ messages, channel, callbacks, ...options 
           type="image/png"
           href={
             options.favicon === 'guild'
-              ? channel.isDMBased()
+              ? channel.isDM()
                 ? undefined
-                : channel.guild.iconURL({ size: 16, extension: 'png' }) ?? undefined
+                : (await (channel as BaseGuildChannel).guild()).iconURL({ size: 16, extension: 'png' }) ?? undefined
               : options.favicon
           }
         />
 
         {/* title */}
-        <title>{channel.isDMBased() ? 'Direct Messages' : channel.name}</title>
+        <title>{channel.isDM() ? 'Direct Messages' : (channel as BaseGuildChannel).name}</title>
 
         {/* message reference handler */}
         <script

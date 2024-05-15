@@ -1,4 +1,5 @@
-import { AttachmentBuilder, version, Collection, type Channel, type Message, type TextBasedChannel } from 'discord.js';
+import type { BaseGuildChannel } from 'seyfert';
+import { AttachmentBuilder, Collection, type AllChannels, type Message, type TextBaseGuildChannel } from 'seyfert';
 import DiscordMessages from './generator';
 import {
   ExportReturnType,
@@ -10,17 +11,6 @@ import {
 // re-export component for custom rendering
 export { default as DiscordMessages } from './generator/transcript';
 
-// version check
-const versionPrefix = version.split('.')[0];
-
-if (versionPrefix !== '14' && versionPrefix !== '15') {
-  console.error(
-    `[discord-html-transcripts] Versions v3.x.x of discord-html-transcripts are only compatible with discord.js v14.x.x and v15.x.x, and you are using v${version}.` +
-      `    For v13.x.x support, please install discord-html-transcripts v2.x.x using "npm install discord-html-transcripts@^2".`
-  );
-  process.exit(1);
-}
-
 /**
  *
  * @param messages The messages to generate a transcript from
@@ -30,7 +20,7 @@ if (versionPrefix !== '14' && versionPrefix !== '15') {
  */
 export async function generateFromMessages<T extends ExportReturnType = ExportReturnType.Attachment>(
   messages: Message[] | Collection<string, Message>,
-  channel: Channel,
+  channel: AllChannels,
   options: GenerateFromMessagesOptions<T> = {}
 ): Promise<ObjectType<T>> {
   // turn messages into an array
@@ -46,8 +36,9 @@ export async function generateFromMessages<T extends ExportReturnType = ExportRe
     callbacks: {
       resolveChannel: async (id) => channel.client.channels.fetch(id).catch(() => null),
       resolveUser: async (id) => channel.client.users.fetch(id).catch(() => null),
-      resolveRole: channel.isDMBased() ? () => null : async (id) => channel.guild?.roles.fetch(id).catch(() => null),
-
+      resolveRole: channel.isDM() 
+        ? () => null :
+        async (id) => (await (await (channel as BaseGuildChannel).guild()).roles.list()).find((role) => role.id === id) ?? null,
       ...(options.callbacks ?? {}),
     },
     poweredBy: options.poweredBy ?? true,
@@ -73,7 +64,9 @@ export async function generateFromMessages<T extends ExportReturnType = ExportRe
     return html as unknown as ObjectType<T>;
   }
 
-  return new AttachmentBuilder(Buffer.from(html), {
+  return new AttachmentBuilder({
+    type: "buffer",
+    resolvable: Buffer.from(html),
     name: options.filename ?? `transcript-${channel.id}.html`,
   }) as unknown as ObjectType<T>;
 }
@@ -85,12 +78,11 @@ export async function generateFromMessages<T extends ExportReturnType = ExportRe
  * @returns       The generated transcript
  */
 export async function createTranscript<T extends ExportReturnType = ExportReturnType.Attachment>(
-  channel: TextBasedChannel,
+  channel: TextBaseGuildChannel,
   options: CreateTranscriptOptions<T> = {}
 ): Promise<ObjectType<T>> {
   // validate type
-  if (!channel.isTextBased()) {
-    // @ts-expect-error(2339): run-time check
+  if (!channel.isTextGuild()) {
     throw new TypeError(`Provided channel must be text-based, received ${channel.type}`);
   }
 
@@ -108,14 +100,14 @@ export async function createTranscript<T extends ExportReturnType = ExportReturn
     if (!lastMessageId) delete fetchLimitOptions.before;
 
     // fetch messages
-    const messages = await channel.messages.fetch(fetchLimitOptions);
+    const messages = await channel.client.channels.fetchMessages(channel.id);
 
     // add the messages to the array
     allMessages.push(...messages.values());
-    lastMessageId = messages.lastKey();
+    lastMessageId = messages[messages.length - 1].id;
 
     // if there are no more messages, break
-    if (messages.size < 100) break;
+    if (messages.length < 100) break;
 
     // if the limit has been reached, break
     if (allMessages.length >= resolvedLimit) break;

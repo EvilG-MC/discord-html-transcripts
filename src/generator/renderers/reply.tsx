@@ -1,33 +1,35 @@
 import { DiscordReply } from '@derockdev/discord-components-react';
-import { type Message, UserFlags } from 'discord.js';
 import type { RenderMessageContext } from '..';
 import React from 'react';
 import MessageContent, { RenderType } from './content';
+import type { Message } from 'seyfert';
+import { UserFlags } from 'seyfert/lib/types';
 
 export default async function MessageReply({ message, context }: { message: Message; context: RenderMessageContext }) {
-  if (!message.reference) return null;
-  if (message.reference.guildId !== message.guild?.id) return null;
+  const guild = await message.guild();
+  
+  if (!message.messageReference) return null;
+  if (message.messageReference.channelId !== message.channelId) return null;
 
-  const referencedMessage = context.messages.find((m) => m.id === message.reference!.messageId);
-
+  const referencedMessage = context.messages.find((m) => m.id === message.messageReference!.messageId);
   if (!referencedMessage) return <DiscordReply slot="reply">Message could not be loaded.</DiscordReply>;
+  
+  const channel = await message.channel();
 
-  const isCrosspost = referencedMessage.reference && referencedMessage.reference.guildId !== message.guild?.id;
-  const isCommand = referencedMessage.interaction !== null;
-
+  const isCrosspost = referencedMessage.messageReference && referencedMessage.messageReference.guildId !== guild?.id;
+  const isCommand = !!referencedMessage.interaction;
+  
   return (
     <DiscordReply
       slot="reply"
-      edited={!isCommand && referencedMessage.editedAt !== null}
-      attachment={referencedMessage.attachments.size > 0}
-      author={
-        referencedMessage.member?.nickname ?? referencedMessage.author.displayName ?? referencedMessage.author.username
-      }
+      edited={!isCommand && referencedMessage.editedTimestamp !== null}
+      attachment={referencedMessage.attachments.length > 0}
+      author={referencedMessage.author.tag}
       avatar={referencedMessage.author.avatarURL({ size: 32 }) ?? undefined}
-      roleColor={referencedMessage.member?.displayHexColor ?? undefined}
+      roleColor={`#${referencedMessage.author.accentColor?.toString(16).padStart(6, '0')}`}
       bot={!isCrosspost && referencedMessage.author.bot}
-      verified={referencedMessage.author.flags?.has(UserFlags.VerifiedBot)}
-      op={message.channel.isThread() && referencedMessage.author.id === message.channel.ownerId}
+      verified={referencedMessage.author.flags && (referencedMessage.author.flags & UserFlags.VerifiedBot) === UserFlags.VerifiedBot}
+      op={channel.isThread() && referencedMessage.author.id === channel.ownerId}
       server={isCrosspost ?? undefined}
       command={isCommand}
     >

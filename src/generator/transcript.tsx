@@ -1,9 +1,10 @@
 import { DiscordHeader, DiscordMessages as DiscordMessagesComponent } from '@derockdev/discord-components-react';
-import { ChannelType } from 'discord.js';
 import React, { Suspense } from 'react';
 import type { RenderMessageContext } from '.';
 import MessageContent, { RenderType } from './renderers/content';
 import DiscordMessage from './renderers/message';
+import type { BaseGuildChannel } from 'seyfert';
+import { ChannelType } from 'seyfert/lib/types';
 
 /**
  * The core transcript component.
@@ -13,25 +14,29 @@ import DiscordMessage from './renderers/message';
  * @returns
  */
 export default async function DiscordMessages({ messages, channel, callbacks, ...options }: RenderMessageContext) {
+  const guild = channel.isDM()
+    ? undefined
+    : (await (channel as BaseGuildChannel).guild());
+
   return (
     <DiscordMessagesComponent style={{ minHeight: '100vh' }}>
       {/* header */}
       <DiscordHeader
-        guild={channel.isDMBased() ? 'Direct Messages' : channel.guild.name}
+        guild={channel.isDM() ? 'Direct Messages' : guild?.name}
         channel={
-          channel.isDMBased()
+          channel.isDM()
             ? channel.type === ChannelType.DM
-              ? channel.recipient?.tag ?? 'Unknown Recipient'
+              ? channel.recipients?.[0].globalName ?? 'Unknown Recipient'
               : 'Unknown Recipient'
-            : channel.name
+            : (channel as BaseGuildChannel).name
         }
-        icon={channel.isDMBased() ? undefined : channel.guild.iconURL({ size: 128 }) ?? undefined}
+        icon={channel.isDM() ? undefined : guild?.iconURL({ size: 128 }) ?? undefined}
       >
         {channel.isThread() ? (
-          `Thread channel in ${channel.parent?.name ?? 'Unknown Channel'}`
-        ) : channel.isDMBased() ? (
+          `Thread channel in ${channel.name ?? 'Unknown Channel'}`
+        ) : channel.isDM() ? (
           `Direct Messages`
-        ) : channel.isVoiceBased() ? (
+        ) : channel.isVoice() ? (
           `Voice Text Channel for ${channel.name}`
         ) : channel.type === ChannelType.GuildCategory ? (
           `Category Channel`
@@ -41,7 +46,7 @@ export default async function DiscordMessages({ messages, channel, callbacks, ..
             context={{ messages, channel, callbacks, type: RenderType.REPLY, ...options }}
           />
         ) : (
-          `This is the start of #${channel.name} channel.`
+          `This is the start of #${(channel as BaseGuildChannel).name} channel.`
         )}
       </DiscordHeader>
 

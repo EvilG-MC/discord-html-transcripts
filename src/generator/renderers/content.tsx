@@ -11,13 +11,15 @@ import {
   DiscordUnderlined,
 } from '@derockdev/discord-components-react';
 import parse, { type RuleTypesExtended } from 'discord-markdown-parser';
-import { ChannelType, type APIMessageComponentEmoji } from 'discord.js';
 import React from 'react';
 import type { ASTNode } from 'simple-markdown';
 import { ASTNode as MessageASTNodes } from 'simple-markdown';
 import type { SingleASTNode } from 'simple-markdown';
 import type { RenderMessageContext } from '../';
 import { parseDiscordEmoji } from '../../utils/utils';
+import type { APIMessageComponentEmoji } from 'seyfert/lib/types';
+import { ChannelType } from 'seyfert/lib/types';
+import type { BaseGuildChannel } from 'seyfert';
 
 export enum RenderType {
   EMBED,
@@ -132,8 +134,8 @@ export async function MessageSingleASTNode({ node, context }: { node: SingleASTN
       const channel = await context.callbacks.resolveChannel(id);
 
       return (
-        <DiscordMention type={channel ? (channel.isDMBased() ? 'channel' : getChannelType(channel.type)) : 'channel'}>
-          {channel ? (channel.isDMBased() ? 'DM Channel' : channel.name) : `<#${id}>`}
+        <DiscordMention type={channel ? (channel.isDM() ? 'channel' : getChannelType(channel.type)) : 'channel'}>
+          {channel ? (channel.isDM() ? 'DM Channel' : (channel as BaseGuildChannel).name) : `<#${id}>`}
         </DiscordMention>
       );
     }
@@ -143,7 +145,7 @@ export async function MessageSingleASTNode({ node, context }: { node: SingleASTN
       const role = await context.callbacks.resolveRole(id);
 
       return (
-        <DiscordMention type="role" color={context.type === RenderType.REPLY ? undefined : role?.hexColor}>
+        <DiscordMention type="role" color={context.type === RenderType.REPLY ? undefined : `#${role?.color.toString(16).padStart(6, '0')}`}>
           {role ? role.name : `<@&${id}>`}
         </DiscordMention>
       );
@@ -153,7 +155,7 @@ export async function MessageSingleASTNode({ node, context }: { node: SingleASTN
       const id = node.id as string;
       const user = await context.callbacks.resolveUser(id);
 
-      return <DiscordMention type="user">{user ? user.displayName ?? user.username : `<@${id}>`}</DiscordMention>;
+      return <DiscordMention type="user">{user ? user.tag : `<@${id}>`}</DiscordMention>;
     }
 
     case 'here':

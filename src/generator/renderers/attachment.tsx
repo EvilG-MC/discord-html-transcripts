@@ -1,6 +1,6 @@
 import { DiscordAttachment, DiscordAttachments } from '@derockdev/discord-components-react';
 import React from 'react';
-import type { Attachment as AttachmentType, Message } from 'discord.js';
+import type { Attachment as AttachmentType, Message } from 'seyfert';
 import type { RenderMessageContext } from '..';
 import type { AttachmentTypes } from '../../types';
 import { downloadImageToDataURL, formatBytes } from '../../utils/utils';
@@ -12,11 +12,12 @@ import { downloadImageToDataURL, formatBytes } from '../../utils/utils';
  * @returns
  */
 export async function Attachments(props: { message: Message; context: RenderMessageContext }) {
-  if (props.message.attachments.size === 0) return <></>;
+  if (props.message.attachments.length === 0) return <></>;
 
   return (
     <DiscordAttachments slot="attachments">
       {props.message.attachments.map((attachment, id) => (
+        //@ts-expect-error ignore data, client
         <Attachment attachment={attachment} context={props.context} key={id} />
       ))}
     </DiscordAttachments>
@@ -42,7 +43,7 @@ export async function Attachment({
   context: RenderMessageContext;
 }) {
   let url = attachment.url;
-  const name = attachment.name;
+  const name = attachment.filename;
   const width = attachment.width;
   const height = attachment.height;
 

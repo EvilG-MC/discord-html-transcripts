@@ -1,7 +1,6 @@
-import type { APIMessageComponentEmoji, Emoji } from 'discord.js';
 import { request } from 'undici';
 import twemoji from 'twemoji';
-
+import type { APIMessageComponentEmoji, APIPartialEmoji } from 'seyfert/lib/types';
 export function isDefined<T>(value: T | undefined | null): value is T {
   return value !== undefined && value !== null;
 }
@@ -18,7 +17,7 @@ export function formatBytes(bytes: number, decimals = 2) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
-export function parseDiscordEmoji(emoji: Emoji | APIMessageComponentEmoji) {
+export function parseDiscordEmoji(emoji: APIPartialEmoji | APIMessageComponentEmoji) {
   if (emoji.id) {
     return `https://cdn.discordapp.com/emojis/${emoji.id}.${emoji.animated ? 'gif' : 'png'}`;
   }
