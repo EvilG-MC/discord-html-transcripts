@@ -88,7 +88,7 @@ const transcript = await createTranscript(channel, {
       // register custom callbacks for the following:
       resolveChannel: (channelId: string) => Awaitable<AllChannels | null>,
       resolveUser: (userId: string) => Awaitable<User | null>,
-      resolveRole: (roleId: string) => Awaitable<Guildrole | null>
+      resolveRole: (roleId: string) => Awaitable<GuildRole | null>
     },
     poweredBy: true, // Whether to include the "Powered by discord-html-transcripts" footer
     hydrate: true // Whether to hydrate the html server-side
