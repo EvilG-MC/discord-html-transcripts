@@ -28,7 +28,7 @@ export default async function MessageReply({ message, context }: { message: Mess
       avatar={referencedMessage.author.avatarURL({ size: 32 })}
       roleColor={convertToHEX(referencedMessage.author.accentColor ?? undefined)}
       bot={!isCrosspost && referencedMessage.author.bot}
-      verified={(referencedMessage.author.flags ?? 0 & UserFlags.VerifiedBot) === UserFlags.VerifiedBot}
+      verified={(referencedMessage.author.publicFlags ?? 0 & UserFlags.VerifiedBot) === UserFlags.VerifiedBot}
       op={channel.isThread() && referencedMessage.author.id === channel.ownerId}
       server={isCrosspost ?? undefined}
       command={isCommand}

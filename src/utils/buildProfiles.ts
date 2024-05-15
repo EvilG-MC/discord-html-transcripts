@@ -56,6 +56,6 @@ async function buildProfile(member: GuildMember | undefined, author: User) {
     roleIcon: (await member?.roles.highest())?.icon ?? undefined,
     roleName: (await member?.roles.highest())?.name ?? undefined,
     bot: author.bot,
-    verified: (author.flags ?? 0 & UserFlags.VerifiedBot) === UserFlags.VerifiedBot,
+    verified: (author.publicFlags ?? 0 & UserFlags.VerifiedBot) === UserFlags.VerifiedBot,
   };
 }
