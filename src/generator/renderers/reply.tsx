@@ -2,16 +2,19 @@ import { DiscordReply } from '@derockdev/discord-components-react';
 import type { RenderMessageContext } from '..';
 import React from 'react';
 import MessageContent, { RenderType } from './content';
-import type { Message } from 'seyfert';
+import type { BaseGuildChannel, Message } from 'seyfert';
 import { UserFlags } from 'seyfert/lib/types';
 
 export default async function MessageReply({ message, context }: { message: Message; context: RenderMessageContext }) {  
+  const guildId = message.guildId || (await message.channel() as BaseGuildChannel | undefined)?.guildId;
+
   if (!message.messageReference) return null;
   if (message.messageReference.channelId !== message.channelId) return null;
 
-  const referencedMessage = context.messages.find((m) => m.id === message.referencedMessage?.id);
+  const referencedMessage = context.messages.find((m) => m.id === message.messageReference?.messageId);
   if (!referencedMessage) return <DiscordReply slot="reply">Message could not be loaded.</DiscordReply>;
 
+  const isCrosspost = referencedMessage.messageReference && referencedMessage.messageReference.guildId !== guildId
   const channel = await message.channel();
   const isCommand = !!referencedMessage.interaction;
 
@@ -23,10 +26,10 @@ export default async function MessageReply({ message, context }: { message: Mess
       author={message.author.tag}
       avatar={message.author.avatarURL({ size: 32 })}
       roleColor={`#${message.author.accentColor?.toString(16).padStart(6, '0')}`}
-      bot={message.author.bot}
+      bot={!isCrosspost && message.author.bot}
       verified={referencedMessage.author.flags && (referencedMessage.author.flags & UserFlags.VerifiedBot) === UserFlags.VerifiedBot}
       op={channel.isThread() && referencedMessage.author.id === channel.ownerId}
-      server={false}
+      server={isCrosspost ?? undefined}
       command={isCommand}
     >
       {referencedMessage.content ? (

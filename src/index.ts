@@ -36,9 +36,9 @@ export async function generateFromMessages<T extends ExportReturnType = ExportRe
     callbacks: {
       resolveChannel: async (id) => channel.client.channels.fetch(id).catch(() => null),
       resolveUser: async (id) => channel.client.users.fetch(id).catch(() => null),
-      resolveRole: channel.isDM() 
+      resolveRole: channel.isDM()
         ? () => null :
-        async (id) => (await (await (channel as BaseGuildChannel).guild()).roles.list()).find((role) => role.id === id) ?? null,
+        async (id) => (await channel.client.roles.list((channel as BaseGuildChannel).guildId!)).find((role) => role.id === id) ?? null,
       ...(options.callbacks ?? {}),
     },
     poweredBy: options.poweredBy ?? true,
