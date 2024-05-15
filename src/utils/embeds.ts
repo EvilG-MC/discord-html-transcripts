@@ -1,4 +1,4 @@
-import type { APIEmbedField } from "seyfert/lib/types";
+import type { APIEmbedField } from 'seyfert/lib/types';
 
 export function calculateInlineIndex(fields: APIEmbedField[], currentFieldIndex: number) {
   const startIndex = currentFieldIndex - 1;

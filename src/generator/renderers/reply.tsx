@@ -6,8 +6,8 @@ import type { BaseGuildChannel, Message } from 'seyfert';
 import { UserFlags } from 'seyfert/lib/types';
 import { convertToHEX } from '../../utils/utils';
 
-export default async function MessageReply({ message, context }: { message: Message; context: RenderMessageContext }) {  
-  const guildId = message.guildId ?? (await message.channel() as BaseGuildChannel | undefined)?.guildId;
+export default async function MessageReply({ message, context }: { message: Message; context: RenderMessageContext }) {
+  const guildId = message.guildId ?? ((await message.channel()) as BaseGuildChannel | undefined)?.guildId;
 
   if (!message.messageReference) return null;
   if (message.messageReference.channelId !== message.channelId) return null;
@@ -15,7 +15,7 @@ export default async function MessageReply({ message, context }: { message: Mess
   const referencedMessage = context.messages.find((m) => m.id === message.messageReference?.messageId);
   if (!referencedMessage) return <DiscordReply slot="reply">Message could not be loaded.</DiscordReply>;
 
-  const isCrosspost = referencedMessage.messageReference && referencedMessage.messageReference.guildId !== guildId
+  const isCrosspost = referencedMessage.messageReference && referencedMessage.messageReference.guildId !== guildId;
   const channel = await message.channel();
   const isCommand = !!referencedMessage.interaction;
 

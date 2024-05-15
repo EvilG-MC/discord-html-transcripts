@@ -1,6 +1,6 @@
-import type { GuildMember, Message, User } from "seyfert";
-import { ChannelType, UserFlags } from "seyfert/lib/types";
-import { convertToHEX } from "./utils";
+import type { GuildMember, Message, User } from 'seyfert';
+import { ChannelType, UserFlags } from 'seyfert/lib/types';
+import { convertToHEX } from './utils';
 
 export type Profile = {
   author: string; // author of the message
@@ -34,13 +34,13 @@ export async function buildProfiles(messages: Message[]) {
     }
 
     // threads
-    if (message.thread && (message.thread.type === ChannelType.PublicThread || message.thread.type === ChannelType.PrivateThread)) {
+    if (
+      message.thread &&
+      (message.thread.type === ChannelType.PublicThread || message.thread.type === ChannelType.PrivateThread)
+    ) {
       const thread = await message.client.messages.fetch(message.thread.id, message.thread.parentId!);
 
-      profiles[thread.author.id] = await buildProfile(
-        thread.member,
-        thread.author,
-      );
+      profiles[thread.author.id] = await buildProfile(thread.member, thread.author);
     }
   }
 

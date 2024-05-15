@@ -14,9 +14,7 @@ import { ChannelType } from 'seyfert/lib/types';
  * @returns
  */
 export default async function DiscordMessages({ messages, channel, callbacks, ...options }: RenderMessageContext) {
-  const guild = channel.isDM()
-    ? undefined
-    : (await (channel as BaseGuildChannel).guild());
+  const guild = channel.isDM() ? undefined : await (channel as BaseGuildChannel).guild();
 
   return (
     <DiscordMessagesComponent style={{ minHeight: '100vh' }}>
@@ -67,7 +65,7 @@ export default async function DiscordMessages({ messages, channel, callbacks, ..
         {options.poweredBy ? (
           <span style={{ textAlign: 'center' }}>
             Powered by{' '}
-            <a href="https://github.com/ItzDerock/discord-html-transcripts" style={{ color: 'lightblue' }}>
+            <a href="https://github.com/EvilG-MC/discord-html-transcripts" style={{ color: 'lightblue' }}>
               discord-html-transcripts
             </a>
             .

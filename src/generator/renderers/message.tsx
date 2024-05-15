@@ -29,11 +29,13 @@ export default async function DiscordMessage({
   //@ts-expect-error not implemented yet
   if (message.system) return <DiscordSystemMessage message={message} />;
 
-  const guildId = message.guildId ?? (await message.channel() as BaseGuildChannel | undefined)?.guildId;
+  const guildId = message.guildId ?? ((await message.channel()) as BaseGuildChannel | undefined)?.guildId;
   const isCrosspost = message.messageReference && message.messageReference.guildId !== guildId;
-  const threadMessage = message.thread && (message.thread.type === ChannelType.PublicThread || message.thread.type === ChannelType.PrivateThread)
-    ? await message.client.messages.fetch(message.thread.lastMessageId!, message.thread.id).catch(() => null)
-    : null;
+  const threadMessage =
+    message.thread &&
+    (message.thread.type === ChannelType.PublicThread || message.thread.type === ChannelType.PrivateThread)
+      ? await message.client.messages.fetch(message.thread.lastMessageId!, message.thread.id).catch(() => null)
+      : null;
 
   return (
     <DiscordMessageComponent
@@ -42,7 +44,7 @@ export default async function DiscordMessage({
       key={message.id}
       edited={message.editedTimestamp !== null}
       server={isCrosspost ?? undefined}
-      highlight={message.mentions.roles.includes("@everyone")}
+      highlight={message.mentions.roles.includes('@everyone')}
       profile={message.author.id}
     >
       {/* reply */}
@@ -50,11 +52,7 @@ export default async function DiscordMessage({
 
       {/* slash command */}
       {message.interaction && (
-        <DiscordCommand
-          slot="reply"
-          profile={message.interaction.user.id}
-          command={'/' + message.interaction.name}
-        />
+        <DiscordCommand slot="reply" profile={message.interaction.user.id} command={'/' + message.interaction.name} />
       )}
 
       {/* message content */}
@@ -98,32 +96,37 @@ export default async function DiscordMessage({
       )}
 
       {/* threads */}
-      {message.thread && (message.thread.type === ChannelType.PublicThread || message.thread.type === ChannelType.PrivateThread) && (
-        <DiscordThread
-          slot="thread"
-          name={message.thread.name}
-          cta={
-            message.thread.messageCount
-              ? `${message.thread.messageCount} Message${message.thread.messageCount > 1 ? 's' : ''}`
-              : 'View Thread'
-          }
-        >
-          {message.thread.lastMessageId && threadMessage ? (
-            <DiscordThreadMessage profile={(await message.client.messages.fetch(message.thread.lastMessageId, message.thread.id)).author.id}>
-              <MessageContent
-                content={
-                  threadMessage.content.length > 128
-                    ? threadMessage.content.substring(0, 125) + '...'
-                    : threadMessage.content
+      {message.thread &&
+        (message.thread.type === ChannelType.PublicThread || message.thread.type === ChannelType.PrivateThread) && (
+          <DiscordThread
+            slot="thread"
+            name={message.thread.name}
+            cta={
+              message.thread.messageCount
+                ? `${message.thread.messageCount} Message${message.thread.messageCount > 1 ? 's' : ''}`
+                : 'View Thread'
+            }
+          >
+            {message.thread.lastMessageId && threadMessage ? (
+              <DiscordThreadMessage
+                profile={
+                  (await message.client.messages.fetch(message.thread.lastMessageId, message.thread.id)).author.id
                 }
-                context={{ ...context, type: RenderType.REPLY }}
-              />
-            </DiscordThreadMessage>
-          ) : (
-            `Thread messages not saved.`
-          )}
-        </DiscordThread>
-      )}
+              >
+                <MessageContent
+                  content={
+                    threadMessage.content.length > 128
+                      ? threadMessage.content.substring(0, 125) + '...'
+                      : threadMessage.content
+                  }
+                  context={{ ...context, type: RenderType.REPLY }}
+                />
+              </DiscordThreadMessage>
+            ) : (
+              `Thread messages not saved.`
+            )}
+          </DiscordThread>
+        )}
     </DiscordMessageComponent>
   );
 }

@@ -1,9 +1,10 @@
 # `discord-html-transcripts`
 
-[![Discord](https://img.shields.io/discord/555474311637499955?label=discord)](https://discord.gg/rf5qN7C)
-[![npm](https://img.shields.io/npm/dw/discord-html-transcripts)](http://npmjs.org/package/discord-html-transcripts)
-![GitHub package.json version](https://img.shields.io/github/package-json/v/ItzDerock/discord-html-transcripts)
-![GitHub Repo stars](https://img.shields.io/github/stars/ItzDerock/discord-html-transcripts?style=social)
+> A modified version of: [discord-html-transcripts](https://github.com/ItzDerock/discord-html-transcripts)
+> With the only purpose to make this works with [Seyfert](https://github.com/tiramisulabs/seyfert)
+
+![GitHub package.json version](https://img.shields.io/github/package-json/v/EvilG-MC/discord-html-transcripts)
+![GitHub Repo stars](https://img.shields.io/github/stars/EvilG-MC/discord-html-transcripts?style=social)
 
 Discord HTML Transcripts is a node.js module to generate nice looking HTML transcripts. Processes discord markdown like **bold**, _italics_, ~~strikethroughs~~, and more. Nicely formats attachments and embeds. Built in XSS protection, preventing users from inserting arbitrary html tags.
 
@@ -27,15 +28,13 @@ This module can format the following:
 - Mentions
 - Threads
 
-**This module is designed to work with [discord.js](https://discord.js.org/#/) v14/v15 _only_. If you need v13 support, roll back to v2.X.X**
-
 Styles from [@derockdev/discord-components](https://github.com/ItzDerock/discord-components).  
 Behind the scenes, this package uses React SSR to generate a static site.
 
 ## 👋 Support
 
-Please do not DM me requesting support with this package, I will not respond.  
-Instead, please open a thread on [this](https://discord.gg/MZQN8QMJg8) server.
+At the moment, create a [issue](https://github.com/EvilG-MC/discord-html-transcripts/issues/new)
+To get support or create a [pull request](https://github.com/EvilG-MC/discord-html-transcripts/pulls) to add new features.
 
 ## 🖨️ Example Output
 
@@ -45,35 +44,30 @@ Instead, please open a thread on [this](https://discord.gg/MZQN8QMJg8) server.
 
 ### Example usage using the built in message fetcher.
 
-```js
-const discordTranscripts = require('discord-html-transcripts');
-// or (if using typescript) import * as discordTranscripts from 'discord-html-transcripts';
+```ts
+import { createTranscript } from 'discord-html-transcripts';
 
-const channel = message.channel; // or however you get your TextChannel
+const channel = ctx.channel(); // or however you get your text channel
+if (!channel?.isTextGuild()) return;
 
 // Must be awaited
-const attachment = await discordTranscripts.createTranscript(channel);
+const transcript = await createTranscript(channel);
 
-channel.send({
-  files: [attachment],
-});
+await channel.messages.write({ files: [transcript] });
 ```
 
 ### Or if you prefer, you can pass in your own messages.
 
 ```js
-const discordTranscripts = require('discord-html-transcripts');
-// or (if using typescript) import * as discordTranscripts from 'discord-html-transcripts';
+import { createTranscript } from 'discord-html-transcripts';
 
-const messages = someWayToGetMessages(); // Must be Collection<string, Message> or Message[]
+const messages = someWayToGetMessages(); // Must be Message[]
 const channel = someWayToGetChannel(); // Used for ticket name, guild icon, and guild name
 
 // Must be awaited
-const attachment = await discordTranscripts.generateFromMessages(messages, channel);
+const transcript = await generateFromMessages(messages, channel);
 
-channel.send({
-  files: [attachment],
-});
+await channel.messages.write({ files: [transcript] });
 ```
 
 ## ⚙️ Configuration
@@ -84,7 +78,7 @@ Both methods of generating a transcript allow for an option object as the last p
 ### Built in Message Fetcher
 
 ```js
-const attachment = await discordTranscripts.createTranscript(channel, {
+const transcript = await createTranscript(channel, {
     limit: -1, // Max amount of messages to fetch. `-1` recursively fetches.
     returnType: 'attachment', // Valid options: 'buffer' | 'string' | 'attachment' Default: 'attachment' OR use the enum ExportReturnType
     filename: 'transcript.html', // Only valid with returnType is 'attachment'. Name of attachment.
@@ -92,9 +86,9 @@ const attachment = await discordTranscripts.createTranscript(channel, {
     footerText: "Exported {number} message{s}", // Change text at footer, don't forget to put {number} to show how much messages got exported, and {s} for plural
     callbacks: {
       // register custom callbacks for the following:
-      resolveChannel: (channelId: string) => Awaitable<Channel | null>,
+      resolveChannel: (channelId: string) => Awaitable<AllChannels | null>,
       resolveUser: (userId: string) => Awaitable<User | null>,
-      resolveRole: (roleId: string) => Awaitable<Role | null>
+      resolveRole: (roleId: string) => Awaitable<Guildrole | null>
     },
     poweredBy: true, // Whether to include the "Powered by discord-html-transcripts" footer
     hydrate: true // Whether to hydrate the html server-side
@@ -104,11 +98,11 @@ const attachment = await discordTranscripts.createTranscript(channel, {
 ### Providing your own messages
 
 ```js
-const attachment = await discordTranscripts.generateFromMessages(messages, channel, {
+const transcript = await generateFromMessages(messages, channel, {
   // Same as createTranscript, except no limit
 });
 ```
 
 ## 🤝 Enjoy the package?
 
-Give it a star ⭐ and/or support me on [ko-fi](https://ko-fi.com/derock)
+Give it a star ⭐ and/or support the original author on [ko-fi](https://ko-fi.com/derock)

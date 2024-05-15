@@ -10,7 +10,7 @@ import type { RenderMessageContext } from '..';
 import { calculateInlineIndex } from '../../utils/embeds';
 import MessageContent, { RenderType } from './content';
 import type { Message } from 'seyfert';
-import type{ APIEmbed } from 'seyfert/lib/types';
+import type { APIEmbed } from 'seyfert/lib/types';
 import { convertToHEX } from '../../utils/utils';
 
 type RenderEmbedContext = RenderMessageContext & {
@@ -19,8 +19,6 @@ type RenderEmbedContext = RenderMessageContext & {
 };
 
 export async function DiscordEmbed({ embed, context }: { embed: APIEmbed; context: RenderEmbedContext }) {
-  
-
   return (
     <DiscordEmbedComponent
       embedTitle={embed.title}

@@ -1,10 +1,16 @@
 import { DiscordActionRow, DiscordButton } from '@derockdev/discord-components-react';
-import type { APIActionRowComponent, APIActionRowComponentTypes, APIButtonComponentWithURL} from 'seyfert/lib/types';
+import type { APIActionRowComponent, APIActionRowComponentTypes, APIButtonComponentWithURL } from 'seyfert/lib/types';
 import { ButtonStyle, ComponentType } from 'seyfert/lib/types';
 import React from 'react';
 import { parseDiscordEmoji } from '../../utils/utils';
 
-export default function ComponentRow({ row, id }: { row: APIActionRowComponent<APIActionRowComponentTypes>; id: number }) {
+export default function ComponentRow({
+  row,
+  id,
+}: {
+  row: APIActionRowComponent<APIActionRowComponentTypes>;
+  id: number;
+}) {
   return (
     <DiscordActionRow key={id}>
       {row.components.map((component, id) => (

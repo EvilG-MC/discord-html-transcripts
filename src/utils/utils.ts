@@ -68,9 +68,9 @@ export function streamToString(stream: NodeJS.ReadableStream) {
 }
 
 /**
- * 
+ *
  * Convert a number color to HEX
  * @param color - The color number
- * @returns 
+ * @returns
  */
-export const convertToHEX = (color?: number) => color ? `#${color.toString(16).padStart(6, '0')}` : "#FFFFFF"; 
+export const convertToHEX = (color?: number) => (color ? `#${color.toString(16).padStart(6, '0')}` : '#FFFFFF');

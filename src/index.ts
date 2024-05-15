@@ -37,8 +37,10 @@ export async function generateFromMessages<T extends ExportReturnType = ExportRe
       resolveChannel: async (id) => channel.client.channels.fetch(id).catch(() => null),
       resolveUser: async (id) => channel.client.users.fetch(id).catch(() => null),
       resolveRole: channel.isDM()
-        ? () => null :
-        async (id) => (await channel.client.roles.list((channel as BaseGuildChannel).guildId!)).find((role) => role.id === id) ?? null,
+        ? () => null
+        : async (id) =>
+            (await channel.client.roles.list((channel as BaseGuildChannel).guildId!)).find((role) => role.id === id) ??
+            null,
       ...(options.callbacks ?? {}),
     },
     poweredBy: options.poweredBy ?? true,
@@ -65,7 +67,7 @@ export async function generateFromMessages<T extends ExportReturnType = ExportRe
   }
 
   return new AttachmentBuilder({
-    type: "buffer",
+    type: 'buffer',
     resolvable: Buffer.from(html),
     name: options.filename ?? `transcript-${channel.id}.html`,
   }) as unknown as ObjectType<T>;
