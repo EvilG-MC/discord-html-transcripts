@@ -1,4 +1,4 @@
-import type { GuildMember, Message, User } from 'seyfert';
+import type { BaseGuildChannel, GuildMember, Message, User } from 'seyfert';
 import { ChannelType, UserFlags } from 'seyfert/lib/types';
 import { convertToHEX } from './utils';
 
@@ -18,18 +18,20 @@ export async function buildProfiles(messages: Message[]) {
 
   // loop through messages
   for (const message of messages) {
+    const guildId = message.guildId ?? ((await message.channel()) as BaseGuildChannel | undefined)?.guildId;
+    
     // add all users
     const author = message.author;
     if (!profiles[author.id]) {
       // add profile
-      profiles[author.id] = await buildProfile(message.member, author);
+      profiles[author.id] = await buildProfile(message.member, author, guildId);
     }
 
     // add interaction users
     if (message.interaction) {
       const user = message.author;
       if (!profiles[user.id]) {
-        profiles[user.id] = await buildProfile(message.member, user);
+        profiles[user.id] = await buildProfile(undefined, user, undefined);
       }
     }
 
@@ -40,7 +42,7 @@ export async function buildProfiles(messages: Message[]) {
     ) {
       const thread = await message.client.messages.fetch(message.thread.id, message.thread.parentId!);
 
-      profiles[thread.author.id] = await buildProfile(thread.member, thread.author);
+      profiles[thread.author.id] = await buildProfile(thread.member, thread.author, thread.guildId);
     }
   }
 
@@ -48,13 +50,19 @@ export async function buildProfiles(messages: Message[]) {
   return profiles;
 }
 
-async function buildProfile(member: GuildMember | undefined, author: User) {
+async function buildProfile(member: GuildMember | undefined, author: User, guildId: string | undefined) {
+  await author.fetch();
+
+  if (guildId && !member) member = await author.client.members.fetch(guildId, author.id)
+
+  const role = await member?.roles.highest();
+
   return {
     author: author.tag,
     avatar: member?.dynamicAvatarURL({ size: 64 }) ?? author.avatarURL({ size: 64 }),
-    roleColor: convertToHEX(author.accentColor ?? undefined),
-    roleIcon: (await member?.roles.highest())?.icon ?? undefined,
-    roleName: (await member?.roles.highest())?.name ?? undefined,
+    roleColor: convertToHEX(role?.color ?? author.accentColor ?? undefined),
+    roleIcon: role?.icon ?? undefined,
+    roleName: role?.name ?? undefined,
     bot: author.bot,
     verified: (author.publicFlags ?? 0 & UserFlags.VerifiedBot) === UserFlags.VerifiedBot,
   };

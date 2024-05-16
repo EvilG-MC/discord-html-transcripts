@@ -19,6 +19,8 @@ export default async function MessageReply({ message, context }: { message: Mess
   const channel = await message.channel();
   const isCommand = !!referencedMessage.interaction;
 
+  await referencedMessage.author.fetch();
+
   return (
     <DiscordReply
       slot="reply"
